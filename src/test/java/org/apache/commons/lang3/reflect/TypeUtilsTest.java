@@ -1075,4 +1075,153 @@ public class TypeUtilsTest<B> extends AbstractLangTest {
 
         assertEquals(String.class, TypeUtils.wrap(String.class).getType());
     }
+
+    @Test
+    public void testGenericArrayTypeToString() {
+        GenericArrayType type = TypeUtils.genericArrayType(
+                TypeUtils.parameterize(Comparable.class,
+                        TypeUtils.wildcardType().withUpperBounds(Integer.class).build()));
+        assertEquals("java.lang.Comparable<? extends java.lang.Integer>[]", type.toString());
+    }
+
+    @Test
+    public void testGenericArrayTypeEquals_sameInstance() {
+        GenericArrayType type = TypeUtils.genericArrayType(String.class);
+        assertTrue(type.equals(type));
+    }
+
+    @Test
+    public void testGenericArrayTypeEquals_equivalentType() {
+        GenericArrayType type1 = TypeUtils.genericArrayType(String.class);
+        GenericArrayType type2 = TypeUtils.genericArrayType(String.class);
+        assertTrue(type1.equals(type2));
+        assertEquals(type1.hashCode(), type2.hashCode());
+    }
+
+    @Test
+    public void testGenericArrayTypeEquals_differentType() {
+        GenericArrayType type1 = TypeUtils.genericArrayType(String.class);
+        GenericArrayType type2 = TypeUtils.genericArrayType(Integer.class);
+        assertFalse(type1.equals(type2));
+    }
+
+    @Test
+    public void testGenericArrayTypeEquals_null() {
+        GenericArrayType type = TypeUtils.genericArrayType(String.class);
+        assertFalse(type.equals(null));
+    }
+
+    @Test
+    public void testGenericArrayTypeEquals_differentObjectType() {
+        GenericArrayType type = TypeUtils.genericArrayType(String.class);
+        assertFalse(type.equals("NotAType"));
+    }
+
+    @Test
+    public void testGetGenericComponentType() {
+        GenericArrayType type = TypeUtils.genericArrayType(String.class);
+        assertEquals(String.class, type.getGenericComponentType());
+    }
+
+    @Test
+    public void testParameterizedTypeImplHashCodeConsistency() {
+        Type type1 = TypeUtils.parameterize(Map.class, String.class, Integer.class);
+        Type type2 = TypeUtils.parameterize(Map.class, String.class, Integer.class);
+        assertEquals(type1.hashCode(), type2.hashCode());
+    }
+
+    @Test
+    public void testParameterizedTypeImplHashCodeDifferent() {
+        Type type1 = TypeUtils.parameterize(Map.class, String.class, Integer.class);
+        Type type2 = TypeUtils.parameterize(Map.class, String.class, Long.class);
+        assertTrue(type1.hashCode() != type2.hashCode());
+    }
+
+    @Test
+    public void testParameterizedTypeImplEqualsTrue() {
+        ParameterizedType type1 = TypeUtils.parameterize(List.class, String.class);
+        ParameterizedType type2 = TypeUtils.parameterize(List.class, String.class);
+        assertEquals(type1, type2);
+    }
+
+    @Test
+    public void testParameterizedTypeImplEqualsFalse_DifferentRawType() {
+        ParameterizedType type1 = TypeUtils.parameterize(List.class, String.class);
+        ParameterizedType type2 = TypeUtils.parameterize(java.util.Set.class, String.class); // fontos a teljes név, vagy import
+        assertFalse(type1.equals(type2));
+    }
+
+    @Test
+    public void testParameterizedTypeImplEqualsFalse_DifferentArguments() {
+        ParameterizedType type1 = TypeUtils.parameterize(List.class, String.class);
+        ParameterizedType type2 = TypeUtils.parameterize(List.class, Integer.class);
+        assertFalse(type1.equals(type2));
+    }
+
+    @Test
+    public void testParameterizedTypeImplEqualsFalse_Null() {
+        ParameterizedType type1 = TypeUtils.parameterize(List.class, String.class);
+        assertFalse(type1.equals(null));
+    }
+
+    @Test
+    public void testParameterizedTypeImplEqualsFalse_DifferentClass() {
+        ParameterizedType type1 = TypeUtils.parameterize(List.class, String.class);
+        Object other = new Object();
+        assertFalse(type1.equals(other));
+    }
+
+    @Test
+    public void testWildcardTypeImplHashCodeSame() {
+        WildcardType wildcard1 = TypeUtils.wildcardType()
+                .withUpperBounds(Number.class)
+                .withLowerBounds()
+                .build();
+        WildcardType wildcard2 = TypeUtils.wildcardType()
+                .withUpperBounds(Number.class)
+                .withLowerBounds()
+                .build();
+
+        assertEquals(wildcard1.hashCode(), wildcard2.hashCode());
+    }
+
+    @Test
+    public void testWildcardTypeImplHashCodeDifferentUpperBound() {
+        WildcardType wildcard1 = TypeUtils.wildcardType()
+                .withUpperBounds(Number.class)
+                .withLowerBounds()
+                .build();
+        WildcardType wildcard2 = TypeUtils.wildcardType()
+                .withUpperBounds(String.class)
+                .withLowerBounds()
+                .build();
+
+        assertTrue(wildcard1.hashCode() != wildcard2.hashCode());
+    }
+
+    @Test
+    public void testWildcardTypeImplHashCodeDifferentLowerBound() {
+        WildcardType wildcard1 = TypeUtils.wildcardType()
+                .withLowerBounds(Integer.class)
+                .build();
+        WildcardType wildcard2 = TypeUtils.wildcardType()
+                .withLowerBounds(Long.class)
+                .build();
+
+        assertTrue(wildcard1.hashCode() != wildcard2.hashCode());
+    }
+
+    @Test
+    public void testWildcardTypeImplHashCodeDifferentUpperAndLower() {
+        WildcardType wildcard1 = TypeUtils.wildcardType()
+                .withUpperBounds(Number.class)
+                .withLowerBounds(Integer.class)
+                .build();
+        WildcardType wildcard2 = TypeUtils.wildcardType()
+                .withUpperBounds(Number.class)
+                .withLowerBounds(Long.class)
+                .build();
+
+        assertTrue(wildcard1.hashCode() != wildcard2.hashCode());
+    }
 }

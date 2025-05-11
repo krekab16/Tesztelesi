@@ -18,13 +18,12 @@ package org.apache.commons.lang3.text;
 
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertThrows;
-
+import java.util.Formattable;
 import java.util.FormattableFlags;
 import java.util.Formatter;
-
 import org.apache.commons.lang3.AbstractLangTest;
 import org.junit.jupiter.api.Test;
-
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 /**
  * Tests {@link FormattableUtils}.
  */
@@ -115,4 +114,17 @@ public class FormattableUtilsTest extends AbstractLangTest {
         assertThrows(IllegalArgumentException.class, () -> FormattableUtils.append("foo", new Formatter(), 0, -1, 1, "xx"));
     }
 
+    @Test
+    void testToString() {
+        Formattable formattable = (formatter, flags, width, precision) ->
+                formatter.format("Formatted[%d,%d,%d]", flags, width, precision);
+        String result = FormattableUtils.toString(formattable);
+
+        assertEquals("Formatted[0,-1,-1]", result);
+    }
+
+    @Test
+    void testConstructor() {
+        assertNotNull(new FormattableUtils());
+    }
 }

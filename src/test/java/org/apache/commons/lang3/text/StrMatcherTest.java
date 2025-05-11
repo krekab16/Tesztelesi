@@ -20,7 +20,7 @@ package org.apache.commons.lang3.text;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertInstanceOf;
 import static org.junit.jupiter.api.Assertions.assertSame;
-
+import static org.junit.jupiter.api.Assertions.assertNotNull;
 import org.apache.commons.lang3.AbstractLangTest;
 import org.junit.jupiter.api.Test;
 
@@ -199,4 +199,12 @@ public class StrMatcherTest extends AbstractLangTest {
         assertEquals(1, matcher.isMatch(BUFFER1, 10));
     }
 
+    @Test
+    public void testToStringImplementations() {
+        assertNotNull(StrMatcher.charMatcher('x').toString());
+        assertNotNull(StrMatcher.stringMatcher("abc").toString());
+        assertNotNull(StrMatcher.charSetMatcher("abc").toString());
+        assertNotNull(StrMatcher.trimMatcher().toString());
+        assertNotNull(StrMatcher.noneMatcher().toString());
+    }
 }

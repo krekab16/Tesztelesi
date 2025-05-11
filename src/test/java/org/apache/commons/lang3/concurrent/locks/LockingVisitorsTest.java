@@ -20,13 +20,14 @@ import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotNull;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertThrows;
 
 import java.time.Duration;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.locks.ReadWriteLock;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 import java.util.function.LongConsumer;
-
+import java.lang.reflect.Constructor;
 import org.apache.commons.lang3.AbstractLangTest;
 import org.apache.commons.lang3.ArrayUtils;
 import org.apache.commons.lang3.ThreadUtils;
@@ -154,5 +155,74 @@ public class LockingVisitorsTest extends AbstractLangTest {
         final boolean[] booleanValues = new boolean[10];
         runTest(DELAY, false, millis -> assertTrue(millis < TOTAL_DELAY.toMillis()), booleanValues,
             LockingVisitors.stampedLockVisitor(booleanValues));
+    }
+    @Test
+    public void testGetObject() {
+        final String hidden = "secret";
+        LockVisitor<String, ?> visitor = LockingVisitors.reentrantReadWriteLockVisitor(hidden);
+
+        String result = visitor.getObject();
+
+        assertNotNull(result);
+        assertEquals(hidden, result);
+    }
+
+    @Test
+    public void testApplyReadLockedWithNullFunction() {
+        final Object hidden = new Object();
+        final StampedLockVisitor<Object> visitor = LockingVisitors.stampedLockVisitor(hidden);
+
+        assertThrows(NullPointerException.class, () -> visitor.applyReadLocked(null));
+    }
+
+    @Test
+    public void testApplyWriteLockedWithNullFunction() {
+        final Object hidden = new Object();
+        final StampedLockVisitor<Object> visitor = LockingVisitors.stampedLockVisitor(hidden);
+
+        assertThrows(NullPointerException.class, () -> visitor.applyWriteLocked(null));
+    }
+
+    @Test
+    public void testConstructorCoverage() throws Exception {
+        Constructor<LockingVisitors> constructor = LockingVisitors.class.getDeclaredConstructor();
+        constructor.setAccessible(true);
+        assertNotNull(constructor.newInstance());
+    }
+
+    @Test
+    public void testAcceptReadLockedRunsConsumer() {
+        final AtomicInteger counter = new AtomicInteger(0);
+        final LockVisitor<AtomicInteger, ?> visitor = LockingVisitors.reentrantReadWriteLockVisitor(counter);
+        visitor.acceptReadLocked(c -> c.incrementAndGet());
+        assertEquals(1, counter.get());
+    }
+
+    @Test
+    public void testAcceptWriteLockedRunsConsumer() {
+        final AtomicInteger counter = new AtomicInteger(0);
+        final LockVisitor<AtomicInteger, ?> visitor = LockingVisitors.reentrantReadWriteLockVisitor(counter);
+        visitor.acceptWriteLocked(c -> c.incrementAndGet());
+        assertEquals(1, counter.get());
+    }
+    @Test
+    public void testGetObjectStampedLock() {
+        final String hidden = "testValue";
+        final StampedLockVisitor<String> visitor = LockingVisitors.stampedLockVisitor(hidden);
+        assertEquals(hidden, visitor.getObject());
+    }
+    @Test
+    public void testGetLockReturnsCorrectLock() {
+        ReentrantReadWriteLock rwLock = new ReentrantReadWriteLock();
+        LockVisitor<String, ReadWriteLock> visitor = new LockVisitor<>(
+                "data",
+                rwLock,
+                rwLock::readLock,
+                rwLock::writeLock
+        );
+
+        ReadWriteLock returnedLock = visitor.getLock();
+        assertNotNull(returnedLock);
+        assertEquals(rwLock, returnedLock);
     }
 }

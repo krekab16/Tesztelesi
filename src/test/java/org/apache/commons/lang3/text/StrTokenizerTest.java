@@ -22,7 +22,12 @@ import static org.junit.jupiter.api.Assertions.assertFalse;
 import static org.junit.jupiter.api.Assertions.assertNotSame;
 import static org.junit.jupiter.api.Assertions.assertNull;
 import static org.junit.jupiter.api.Assertions.assertThrows;
+import static org.junit.jupiter.api.Assertions.assertNotNull;
+import static org.junit.jupiter.api.Assertions.assertEquals;
+import static org.junit.jupiter.api.Assertions.assertArrayEquals;
 import static org.junit.jupiter.api.Assertions.assertTrue;
+import static org.junit.jupiter.api.Assertions.assertFalse;
+
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -845,4 +850,97 @@ public class StrTokenizerTest extends AbstractLangTest {
         assertEquals(3, tokenizer.size());
     }
 
+    @Test
+    void testDefaultConstructor() {
+        StrTokenizer tokenizer = new StrTokenizer();
+        assertNotNull(tokenizer);
+    }
+
+    @Test
+    void testConstructorWithCharArray() {
+        char[] input = "apple,banana,orange".toCharArray();
+        StrTokenizer tokenizer = new StrTokenizer(input);
+        assertNotNull(tokenizer);
+    }
+
+    @Test
+    void testConstructorWithString() {
+        String input = "apple,banana,orange";
+        StrTokenizer tokenizer = new StrTokenizer(input);
+        assertNotNull(tokenizer);
+    }
+
+    @Test
+    void testGetTokenArray() {
+        StrTokenizer tokenizer = new StrTokenizer("apple,banana,orange");
+        tokenizer.setDelimiterChar(',');
+        String[] tokens = tokenizer.getTokenArray();
+        assertNotNull(tokens);
+        assertEquals(3, tokens.length);
+        assertArrayEquals(new String[] {"apple", "banana", "orange"}, tokens);
+    }
+
+    @Test
+    void testGetTokenList() {
+        StrTokenizer tokenizer = new StrTokenizer("apple,banana,orange");
+        tokenizer.setDelimiterChar(',');
+        List<String> tokens = tokenizer.getTokenList();
+        assertNotNull(tokens);
+        assertEquals(3, tokens.size());
+        assertTrue(tokens.contains("apple"));
+        assertTrue(tokens.contains("banana"));
+        assertTrue(tokens.contains("orange"));
+    }
+
+    @Test
+    void testNext() {
+        StrTokenizer tokenizer = new StrTokenizer("apple,banana,orange");
+        tokenizer.setDelimiterChar(',');
+        assertEquals("apple", tokenizer.next());
+        assertEquals("banana", tokenizer.next());
+        assertEquals("orange", tokenizer.next());
+    }
+
+    @Test
+    void testSetEmptyTokenAsNull() {
+        StrTokenizer tokenizer = new StrTokenizer("apple,,banana,orange");
+        tokenizer.setDelimiterChar(',');
+        tokenizer.setIgnoreEmptyTokens(false);
+        tokenizer.setEmptyTokenAsNull(true);
+        String[] tokens = tokenizer.getTokenArray();
+        assertEquals(4, tokens.length);
+        assertEquals("apple", tokens[0]);
+        assertNull(tokens[1]);
+        assertEquals("banana", tokens[2]);
+        assertEquals("orange", tokens[3]);
+    }
+
+    @Test
+    void testSetQuoteChar() {
+        StrTokenizer tokenizer = new StrTokenizer("\"apple\",\"banana\",\"orange\"");
+        tokenizer.setDelimiterChar(',');
+        tokenizer.setQuoteChar('\"');
+        String[] tokens = tokenizer.getTokenArray();
+        assertArrayEquals(new String[] {"apple", "banana", "orange"}, tokens);
+    }
+    @Test
+    void testSetEmptyTokenAsNull2() {
+        StrTokenizer tokenizer = new StrTokenizer("apple,,banana");
+        tokenizer.setDelimiterChar(',');
+        tokenizer.setIgnoreEmptyTokens(false);
+        tokenizer.setEmptyTokenAsNull(true);
+        List<String> tokens = tokenizer.getTokenList();
+        assertEquals(3, tokens.size());
+        assertEquals("apple", tokens.get(0));
+        assertNull(tokens.get(1));
+        assertEquals("banana", tokens.get(2));
+    }
+    @Test
+    void testClone() throws CloneNotSupportedException {
+        StrTokenizer tokenizer = new StrTokenizer("apple,banana,orange");
+        StrTokenizer clonedTokenizer = (StrTokenizer) tokenizer.clone();
+        assertNotNull(clonedTokenizer);
+        assertNotSame(tokenizer, clonedTokenizer);
+        assertArrayEquals(tokenizer.getTokenArray(), clonedTokenizer.getTokenArray());
+    }
 }

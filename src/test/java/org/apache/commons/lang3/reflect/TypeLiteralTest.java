@@ -65,4 +65,61 @@ public class TypeLiteralTest extends AbstractLangTest {
         };
         assertTrue(TypeUtils.equals(TypeUtils.parameterize(List.class, String.class), listOfStringType.getType()));
     }
+
+    @Test
+    public void testToString() {
+        TypeLiteral<String> stringTypeLiteral = new TypeLiteral<String>() {};
+        String toString = stringTypeLiteral.toString();
+
+        assertTrue(toString.contains("TypeLiteral"));
+        assertTrue(toString.contains("java.lang.String"));
+
+        TypeLiteral<List<String>> listStringTypeLiteral = new TypeLiteral<List<String>>() {};
+        String listToString = listStringTypeLiteral.toString();
+
+        assertTrue(listToString.contains("TypeLiteral"));
+        assertTrue(listToString.contains("java.util.List<java.lang.String>"));
+    }
+
+    @Test
+    public void testHashCodeConsistency() {
+        TypeLiteral<String> literal1 = new TypeLiteral<String>() {};
+        TypeLiteral<String> literal2 = new TypeLiteral<String>() {};
+
+        assertEquals(literal1.hashCode(), literal2.hashCode());
+
+        TypeLiteral<List<String>> different = new TypeLiteral<List<String>>() {};
+        assertNotEquals(literal1.hashCode(), different.hashCode());
+    }
+
+    @Test
+    public void testEqualsNullAndDifferentType() {
+        TypeLiteral<String> literal = new TypeLiteral<String>() {};
+
+        assertNotEquals(null, literal);
+        assertNotEquals("NotATypeLiteral", literal);
+    }
+
+    @Test
+    public void testEqualsContract() {
+        TypeLiteral<String> a = new TypeLiteral<String>() {};
+        TypeLiteral<String> b = new TypeLiteral<String>() {};
+        TypeLiteral<String> c = new TypeLiteral<String>() {};
+
+        assertEquals(a, a);
+
+        assertEquals(a, b);
+        assertEquals(b, a);
+
+        assertEquals(b, c);
+        assertEquals(a, c);
+    }
+
+    @Test
+    public void testEqualsWithDifferentGenericParameter() {
+        TypeLiteral<List<String>> stringListLiteral = new TypeLiteral<List<String>>() {};
+        TypeLiteral<List<Integer>> integerListLiteral = new TypeLiteral<List<Integer>>() {};
+
+        assertNotEquals(stringListLiteral, integerListLiteral);
+    }
 }

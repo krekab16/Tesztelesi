@@ -1895,4 +1895,42 @@ public class NumberUtilsTest extends AbstractLangTest {
         assertEquals(5, NumberUtils.toShort("", (short) 5));
         assertEquals(5, NumberUtils.toShort(null, (short) 5));
     }
+    @Test
+    public void testIsCreatableWithDifferentInputs() {
+        assertTrue(NumberUtils.isCreatable("123"));
+        assertFalse(NumberUtils.isCreatable("abc"));
+        assertTrue(NumberUtils.isCreatable("12.34"));
+    }
+
+    @Test
+    public void testIsCreatableAdditionalCases() {
+        assertTrue(NumberUtils.isCreatable("0x1A"));       // hex
+        assertTrue(NumberUtils.isCreatable("0X1a"));       // upper case X
+        assertTrue(NumberUtils.isCreatable("0"));          // zero
+        assertTrue(NumberUtils.isCreatable("-0"));         // negative zero
+        assertTrue(NumberUtils.isCreatable("0.0"));        // decimal
+        assertTrue(NumberUtils.isCreatable("-123.456e-10")); // scientific
+        assertTrue(NumberUtils.isCreatable("0xFF"));       // hex
+
+        assertTrue(NumberUtils.isCreatable(Long.toString(Long.MAX_VALUE)));
+        assertTrue(NumberUtils.isCreatable(Long.toString(Long.MIN_VALUE)));
+
+        assertFalse(NumberUtils.isCreatable("0x"));        // incomplete hex
+        assertFalse(NumberUtils.isCreatable("0xG1"));      // invalid hex char
+        assertFalse(NumberUtils.isCreatable("1e"));        // incomplete exponent
+        assertFalse(NumberUtils.isCreatable("--1"));       // invalid syntax
+        assertFalse(NumberUtils.isCreatable(""));          // empty
+        assertFalse(NumberUtils.isCreatable(null));        // null
+        assertFalse(NumberUtils.isCreatable("0.1.2"));     // multiple dots
+        assertFalse(NumberUtils.isCreatable("123L456"));   // invalid long
+    }
+
+    @Test
+    public void testMaxDoubleArray() {
+        assertEquals(3.5, NumberUtils.max(new double[] {1.1, 3.5, 2.2}));
+        assertEquals(-1.0, NumberUtils.max(new double[] {-5.5, -1.0, -2.0}));
+        assertEquals(Double.NaN, NumberUtils.max(new double[] {Double.NaN, 2.0, 3.0}));
+        assertEquals(Double.POSITIVE_INFINITY, NumberUtils.max(new double[] {1.0, Double.POSITIVE_INFINITY}));
+        assertEquals(Double.NEGATIVE_INFINITY, NumberUtils.max(new double[] {Double.NEGATIVE_INFINITY}));
+    }
 }

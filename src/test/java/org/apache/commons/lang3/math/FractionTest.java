@@ -24,6 +24,7 @@ import static org.junit.jupiter.api.Assertions.assertSame;
 import static org.junit.jupiter.api.Assertions.assertThrows;
 import static org.junit.jupiter.api.Assertions.assertTrue;
 
+import java.lang.reflect.Method;
 import org.apache.commons.lang3.AbstractLangTest;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.params.ParameterizedTest;
@@ -1128,5 +1129,35 @@ public class FractionTest extends AbstractLangTest {
 
         f = Fraction.getFraction(-1, 1, Integer.MAX_VALUE);
         assertEquals("-2147483648/2147483647", f.toString());
+    }
+
+    @Test
+    public void testGreatestCommonDivisor() throws Exception {
+        Method gcdMethod = Fraction.class.getDeclaredMethod("greatestCommonDivisor", int.class, int.class);
+        gcdMethod.setAccessible(true);
+        int result = (int) gcdMethod.invoke(null, 24, 36);
+        assertEquals(12, result);
+    }
+
+    @Test
+    public void testGetFractionDoubleEdgeCases() {
+        assertThrows(ArithmeticException.class, () -> Fraction.getFraction(Double.POSITIVE_INFINITY));
+        assertThrows(ArithmeticException.class, () -> Fraction.getFraction(Double.NaN));
+
+        Fraction f = Fraction.getFraction(0.5);
+        assertEquals(1, f.getNumerator());
+        assertEquals(2, f.getDenominator());
+
+        f = Fraction.getFraction(1.0 / 3.0);
+        assertEquals(1, f.getNumerator());
+        assertEquals(3, f.getDenominator());
+
+        f = Fraction.getFraction(0.0);
+        assertEquals(0, f.getNumerator());
+        assertEquals(1, f.getDenominator());
+
+        f = Fraction.getFraction(-0.75);
+        assertEquals(-3, f.getNumerator());
+        assertEquals(4, f.getDenominator());
     }
 }
