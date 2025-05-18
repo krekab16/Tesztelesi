@@ -17,8 +17,6 @@
 
 package org.apache.commons.lang3.stream;
 
-import static org.junit.jupiter.api.Assertions.assertArrayEquals;
-
 import java.io.IOException;
 import java.util.Arrays;
 import java.util.Collection;
@@ -30,6 +28,8 @@ import java.util.stream.Collectors;
 
 import org.apache.commons.lang3.stream.Streams.FailableStream;
 import org.junit.jupiter.api.Test;
+
+import static org.junit.jupiter.api.Assertions.*;
 
 /**
  * Tests {@link FailableStream}.
@@ -76,6 +76,40 @@ public class FailableStreamTest {
         assertArrayEquals(new Integer[] { 3, 3 }, toArrayMap(map));
         map.put("c", new AtomicInteger(3));
         assertArrayEquals(new Integer[] { 4, 4, 4 }, toArrayMap(map));
+    }
+
+    @Test
+    public void testReduce() throws IOException {
+        final String[] input = {"a", "b", "c"};
+        final String reduced = Streams.failableStream(input)
+                .reduce("", (a, b) -> a + b);
+        assertEquals("abc", reduced);
+    }
+
+    @Test
+    public void testAnyMatch() throws IOException {
+        final String[] input = {"a", "b", "c"};
+        boolean result = Streams.failableStream(input)
+                .anyMatch(s -> s.equals("b"));
+        assertTrue(result);
+    }
+
+    @Test
+    public void testAllMatch() throws IOException {
+        final String[] input = {"a", "ab", "abc"};
+        boolean result = Streams.failableStream(input)
+                .allMatch(s -> s.contains("a"));
+        assertTrue(result);
+    }
+
+    @Test
+    public void testCollectSupplierBiConsumer() throws IOException {
+        final String[] input = {"a", "b", "c"};
+        StringBuilder result = Streams.failableStream(input)
+                .collect(StringBuilder::new,
+                        StringBuilder::append,
+                        StringBuilder::append);
+        assertEquals("abc", result.toString());
     }
 
     private String[] toArray(final Collection<String> strings) {

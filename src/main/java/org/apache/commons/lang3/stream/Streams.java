@@ -851,4 +851,8 @@ public class Streams {
     public Streams() {
         // empty
     }
+
+    static <T> Spliterator<T> enumerationSpliterator(long size, int characteristics, Enumeration<T> enumeration) {
+        return new EnumerationSpliterator<>(size, characteristics, enumeration);
+    }
 }
