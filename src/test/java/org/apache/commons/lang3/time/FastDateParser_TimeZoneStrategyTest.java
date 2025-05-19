@@ -16,20 +16,14 @@
  */
 package org.apache.commons.lang3.time;
 
-import static org.junit.jupiter.api.Assertions.assertNotEquals;
-import static org.junit.jupiter.api.Assertions.fail;
+import static org.apache.commons.lang3.time.FastDateParser.JAPANESE_IMPERIAL;
+import static org.junit.jupiter.api.Assertions.*;
 import static org.junit.jupiter.api.Assumptions.assumeFalse;
 import static org.junit.jupiter.api.Assumptions.assumeTrue;
 
 import java.text.DateFormatSymbols;
 import java.text.ParseException;
-import java.util.ArrayList;
-import java.util.Comparator;
-import java.util.Date;
-import java.util.List;
-import java.util.Locale;
-import java.util.Objects;
-import java.util.TimeZone;
+import java.util.*;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.lang3.AbstractLangTest;
@@ -226,5 +220,76 @@ public class FastDateParser_TimeZoneStrategyTest extends AbstractLangTest {
     private String toFailureMessage(final Locale locale, final String languageTag, final TimeZone timeZone) {
         return String.format("locale = %s, languageTag = '%s', isAvailableLocale = %s, isLanguageUndetermined = %s, timeZone = %s", languageTag, locale,
                 LocaleUtils.isAvailableLocale(locale), LocaleUtils.isLanguageUndetermined(locale), TimeZones.toTimeZone(timeZone));
+    }
+
+    @Test
+    public void testTimeZoneStrategy_toString() {
+        Locale locale = Locale.US;
+        FastDateParser.TimeZoneStrategy strategy = new FastDateParser.TimeZoneStrategy(locale);
+        String str = strategy.toString();
+        assertNotNull(str);
+        assertTrue(str.contains("TimeZoneStrategy"));
+    }
+
+    @Test
+    public void testToStringAll() {
+        FastDateParser parser = new FastDateParser("yyyy-MM-dd", TimeZone.getTimeZone("UTC"), Locale.US);
+        String desc = parser.toStringAll();
+        assertNotNull(desc);
+        assertTrue(desc.contains("FastDateParser"));
+        assertTrue(desc.contains("yyyy-MM-dd"));
+    }
+
+    @Test
+    public void testTimeZoneStrategyThrowsForUnknownZone() {
+        Locale locale = Locale.US;
+        FastDateParser.TimeZoneStrategy strategy = new FastDateParser.TimeZoneStrategy(locale);
+        Calendar calendar = Calendar.getInstance();
+
+        String unknownZone = "SomeUnknownZone";
+        Exception exception = assertThrows(IllegalStateException.class, () ->
+                strategy.setCalendar(null, calendar, unknownZone)
+        );
+        assertTrue(exception.getMessage().contains("Can't find time zone"));
+    }
+
+    @Test
+    public void testSetCalendar_WithShortTimeZoneName() throws Exception {
+        FastDateParser parser = new FastDateParser("z", TimeZone.getTimeZone("GMT"), Locale.US);
+        Date date = parser.parse("PST");
+        assertNotNull(date);
+    }
+
+    @Test
+    public void testSetCalendar_WithLongTimeZoneName() throws Exception {
+        FastDateParser parser = new FastDateParser("z", TimeZone.getTimeZone("America/Los_Angeles"), Locale.US);
+        Date date = parser.parse("Pacific Daylight Time");
+        assertNotNull(date);
+    }
+
+    @Test
+    public void testSetCalendar_MESZ_MEZ() throws Exception {
+        FastDateParser parser = new FastDateParser("z", TimeZone.getDefault(), Locale.GERMAN);
+        Date date1 = parser.parse("MEZ");
+        Date date2 = parser.parse("MESZ");
+        assertNotEquals(date1.getTime(), date2.getTime());
+    }
+
+    @Test
+    public void testParse_ThrowsParseExceptionOnInvalidInput() {
+        FastDateParser parser = new FastDateParser("yyyy-MM-dd", TimeZone.getDefault(), Locale.US);
+        ParseException ex = assertThrows(ParseException.class, () -> {
+            parser.parse("invalid-date");
+        });
+        assertTrue(ex.getMessage().contains("Unparseable date"));
+    }
+
+    @Test
+    public void testParse_JapaneseImperialParseException() {
+        FastDateParser parser = new FastDateParser("Gyy-MM-dd", TimeZone.getTimeZone("UTC"), JAPANESE_IMPERIAL);
+        ParseException exception = assertThrows(ParseException.class, () -> {
+            parser.parse("InvalidDate");
+        });
+        assertTrue(exception.getMessage().contains("Unparseable date"));
     }
 }
