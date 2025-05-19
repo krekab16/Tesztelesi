@@ -80,7 +80,7 @@ public class StrBuilderTest extends AbstractLangTest {
     }
 
     @Test
-    public void testAppendCharBuffer() {
+    public void testAppendCharBuffer2() {
         final StrBuilder sb1 = new StrBuilder();
         final CharBuffer buf = CharBuffer.allocate(10);
         buf.append("0123456789");
@@ -1851,4 +1851,77 @@ public class StrBuilderTest extends AbstractLangTest {
         sb.clear().append("a b c");
         assertEquals("a b c", sb.trim().toString());
     }
+    @Test
+    void testEqualsIgnoreCase3() {
+        StrBuilder sb1 = new StrBuilder("Hello");
+        StrBuilder sb2 = new StrBuilder("hello");
+        assertTrue(sb1.equalsIgnoreCase(sb2));
+
+        StrBuilder sb3 = new StrBuilder("Hello!");
+        assertFalse(sb1.equalsIgnoreCase(sb3));
+    }
+
+    @Test
+    void testAppendStringBuilderWithOffsets() {
+        StringBuilder sb = new StringBuilder("abcdef");
+        StrBuilder strBuilder = new StrBuilder();
+        strBuilder.append(sb, 1, 3); // "bcd"
+        assertEquals("bcd", strBuilder.toString());
+    }
+
+    @Test
+    void testAppendToAppendable() throws IOException {
+        StrBuilder strBuilder = new StrBuilder("Hello");
+        StringWriter writer = new StringWriter();
+        strBuilder.appendTo(writer);
+        assertEquals("Hello", writer.toString());
+    }
+
+    @Test
+    void testAppendStringBuilder() {
+        StringBuilder sb = new StringBuilder("123");
+        StrBuilder strBuilder = new StrBuilder();
+        strBuilder.append(sb);
+        assertEquals("123", strBuilder.toString());
+    }
+
+    @Test
+    void testAppendCharBuffer() {
+        CharBuffer buffer = CharBuffer.wrap("xyz");
+        StrBuilder sb = new StrBuilder();
+        sb.append(buffer);
+        assertEquals("xyz", sb.toString());
+    }
+
+    @Test
+    void testAppendCharBufferWithOffsets() {
+        CharBuffer buffer = CharBuffer.wrap("abcdef");
+        StrBuilder sb = new StrBuilder();
+        sb.append(buffer, 2, 3); // "cde"
+        assertEquals("cde", sb.toString());
+    }
+
+    @Test
+    void testAppendCharSequence() {
+        CharSequence cs = "abc";
+        StrBuilder sb = new StrBuilder();
+        sb.append(cs);
+        assertEquals("abc", sb.toString());
+    }
+
+    @Test
+    void testAppendCharSequenceWithOffsets() {
+        CharSequence cs = "abcdef";
+        StrBuilder sb = new StrBuilder();
+        sb.append(cs, 1, 4);
+        assertEquals("bcde", sb.toString());
+    }
+
+    @Test
+    void testInsertIntInt() {
+        StrBuilder sb = new StrBuilder("abc");
+        sb.insert(1, 123);
+        assertEquals("a123bc", sb.toString());
+    }
+
 }

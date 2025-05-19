@@ -1096,9 +1096,6 @@ public class MethodUtilsTest extends AbstractLangTest {
 
     @Test
     public void verifyJavaVarargsOverloadingResolution() {
-        // This code is not a test of MethodUtils.
-        // Rather it makes explicit the behavior of the Java specification for
-        // various cases of overload resolution.
         assertEquals("Byte...", TestBean.varOverload((byte) 1, (byte) 2));
         assertEquals("Short...", TestBean.varOverload((short) 1, (short) 2));
         assertEquals("Integer...", TestBean.varOverload(1, 2));

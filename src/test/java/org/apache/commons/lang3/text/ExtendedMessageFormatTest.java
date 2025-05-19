@@ -19,6 +19,7 @@ package org.apache.commons.lang3.text;
 import static org.junit.jupiter.api.Assertions.assertEquals;
 import static org.junit.jupiter.api.Assertions.assertNotEquals;
 
+import static org.junit.jupiter.api.Assertions.*;
 import java.text.DateFormat;
 import java.text.FieldPosition;
 import java.text.Format;
@@ -493,4 +494,54 @@ public class ExtendedMessageFormatTest extends AbstractLangTest {
         }
     }
 
+    @Test
+    public void testInvalidPatternThrowsException() {
+        assertThrows(IllegalArgumentException.class, () -> {
+            new ExtendedMessageFormat("This is invalid {0,foobar}", Locale.ENGLISH);
+        });
+    }
+
+    @Test
+    public void testEqualsAndHashCode() {
+        ExtendedMessageFormat emf1 = new ExtendedMessageFormat("Pattern {0,number}", Locale.ENGLISH);
+        ExtendedMessageFormat emf2 = new ExtendedMessageFormat("Pattern {0,number}", Locale.ENGLISH);
+        ExtendedMessageFormat emf3 = new ExtendedMessageFormat("Different {0,date}", Locale.ENGLISH);
+
+        assertEquals(emf1, emf2);
+        assertEquals(emf1.hashCode(), emf2.hashCode());
+        assertNotEquals(emf1, emf3);
+    }
+    @Test
+    public void testCustomFormatRegistry() {
+        Map<String, FormatFactory> registry = new HashMap<>();
+        registry.put("upper", (name, args, locale) -> new Format() {
+            @Override
+            public StringBuffer format(Object obj, StringBuffer toAppendTo, FieldPosition pos) {
+                return toAppendTo.append(obj.toString().toUpperCase());
+            }
+
+            @Override
+            public Object parseObject(String source, ParsePosition pos) {
+                return null;
+            }
+        });
+
+        ExtendedMessageFormat emf = new ExtendedMessageFormat("Test: {0,upper}", Locale.ENGLISH, registry);
+        String result = emf.format(new Object[]{"test"});
+        assertEquals("Test: TEST", result);
+    }
+
+    @Test
+    public void testToPattern() {
+        String pattern = "Hello {0}";
+        ExtendedMessageFormat emf = new ExtendedMessageFormat(pattern);
+        assertEquals(pattern, emf.toPattern());
+    }
+
+    @Test
+    public void testNullArgument() {
+        ExtendedMessageFormat emf = new ExtendedMessageFormat("Hello {0}");
+        String result = emf.format(new Object[]{null});
+        assertEquals("Hello null", result);
+    }
 }

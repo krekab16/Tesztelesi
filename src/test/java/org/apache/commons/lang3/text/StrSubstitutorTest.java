@@ -710,5 +710,156 @@ public class StrSubstitutorTest extends AbstractLangTest {
         assertTrue(sub.isPreserveEscapes());
         assertEquals("value $${escaped}", sub.replace(org));
     }
+    @Test
+    public void testReplaceInStringBufferWithoutVariables() {
+        StringBuffer buffer = new StringBuffer("Hello, ${name}!");
+        StrSubstitutor sub = new StrSubstitutor();
+        sub.setVariablePrefix("${");
+        sub.setVariableSuffix("}");
+        
+        sub.replaceIn(buffer, 0, buffer.length());
 
+        assertEquals("Hello, ${name}!", buffer.toString(), "Should not change the string if there is no substitution.");
+    }
+
+    @Test
+    public void testReplaceInStringBufferWithVariables() {
+        StringBuffer buffer = new StringBuffer("Hello, ${name}!");
+        StrSubstitutor sub = new StrSubstitutor();
+        sub.setVariablePrefix("${");
+        sub.setVariableSuffix("}");
+
+        HashMap<String, String> map = new HashMap<>();
+        map.put("name", "John");
+
+        sub.setVariableResolver(StrLookup.mapLookup(map));
+
+        sub.replaceIn(buffer, 0, buffer.length());
+
+        assertEquals("Hello, John!", buffer.toString(), "The variable ${name} should be replaced with 'John'.");
+    }
+
+    @Test
+    public void testReplaceWithProperties() {
+        StrSubstitutor sub = new StrSubstitutor();
+        Properties props = new Properties();
+        props.setProperty("name", "John");
+
+        String result = sub.replace("Hello, ${name}!", props);
+
+        assertEquals("Hello, John!", result, "The placeholder should be replaced by the value in properties.");
+    }
+
+    @Test
+    public void testReplaceWithCharSequence() {
+        StrSubstitutor sub = new StrSubstitutor();
+        sub.setVariablePrefix("${");
+        sub.setVariableSuffix("}");
+        HashMap<String, String> map = new HashMap<>();
+        map.put("name", "Jane");
+
+        sub.setVariableResolver(StrLookup.mapLookup(map));
+
+        String result = sub.replace("Hello, ${name}!");
+
+        assertEquals("Hello, Jane!", result, "The variable ${name} should be replaced with 'Jane'.");
+    }
+
+    @Test
+    public void testReplaceInStringBuilder_basic() {
+        StringBuilder builder = new StringBuilder("Hello, ${name}!");
+        StrSubstitutor sub = new StrSubstitutor();
+        sub.setVariablePrefix("${");
+        sub.setVariableSuffix("}");
+
+        HashMap<String, String> map = new HashMap<>();
+        map.put("name", "Alice");
+
+        sub.setVariableResolver(StrLookup.mapLookup(map));
+
+        sub.replaceIn(builder, 0, builder.length());
+
+        assertEquals("Hello, Alice!", builder.toString(), "The variable ${name} should be replaced with 'Alice'.");
+    }
+    @Test
+    public void testReplaceWithObjectAndProperties() {
+        StrSubstitutor sub = new StrSubstitutor();
+        Properties props = new Properties();
+        props.setProperty("name", "John");
+
+        Object input = "Hello, ${name}!";
+
+        String result = sub.replace(input, props);
+
+        assertEquals("Hello, John!", result, "The placeholder should be replaced by the value in properties.");
+    }
+
+    @Test
+    public void testReplaceCharSequenceWithRange() {
+        StrSubstitutor sub = new StrSubstitutor();
+        sub.setVariablePrefix("${");
+        sub.setVariableSuffix("}");
+
+        String input = "Hello, ${name}!";
+
+        HashMap<String, String> map = new HashMap<>();
+        map.put("name", "John");
+
+        sub.setVariableResolver(StrLookup.mapLookup(map));
+
+        String result = sub.replace(input, 0, input.length());
+
+        assertEquals("Hello, John!", result, "The variable ${name} should be replaced with 'John'.");
+    }
+    @Test
+    public void testReplaceInStringBuilderWithRange() {
+        StringBuilder builder = new StringBuilder("Hello, ${name}!");
+        StrSubstitutor sub = new StrSubstitutor();
+        sub.setVariablePrefix("${");
+        sub.setVariableSuffix("}");
+
+        HashMap<String, String> map = new HashMap<>();
+        map.put("name", "Alice");
+
+        sub.setVariableResolver(StrLookup.mapLookup(map));
+
+        sub.replaceIn(builder, 0, builder.length());
+
+        assertEquals("Hello, Alice!", builder.toString(), "The variable ${name} should be replaced with 'Alice'.");
+    }
+
+    @Test
+    public void testReplaceWithCharSequence_basic() {
+        StrSubstitutor sub = new StrSubstitutor();
+        sub.setVariablePrefix("${");
+        sub.setVariableSuffix("}");
+
+        String input = "Hello, ${name}!";
+
+        HashMap<String, String> map = new HashMap<>();
+        map.put("name", "Jane");
+
+        sub.setVariableResolver(StrLookup.mapLookup(map));
+
+        String result = sub.replace(input);
+
+        assertEquals("Hello, Jane!", result, "The variable ${name} should be replaced with 'Jane'.");
+    }
+
+    @Test
+    public void testReplaceInStringBuilder() {
+        StringBuilder builder = new StringBuilder("Hello, ${name}!");
+        StrSubstitutor sub = new StrSubstitutor();
+        sub.setVariablePrefix("${");
+        sub.setVariableSuffix("}");
+
+        HashMap<String, String> map = new HashMap<>();
+        map.put("name", "Bob");
+
+        sub.setVariableResolver(StrLookup.mapLookup(map));
+
+        sub.replaceIn(builder);
+
+        assertEquals("Hello, Bob!", builder.toString(), "The variable ${name} should be replaced with 'Bob'.");
+    }
 }
